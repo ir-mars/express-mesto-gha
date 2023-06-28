@@ -9,13 +9,12 @@ module.exports.getAllCards = (req, res) => {
     }))
 };
 
-/*module.exports.deleteCard = (req, res) => {
-  const _id = req.card._id;
-  const ownerId = req.user._id; 
-  Card.findById({ _id })
-    .populate([ 'owner'])
+module.exports.deleteCard = (req, res) => {
+  /*const _id = req.card._id;*/   
+  Card.findById(req.params.cardId)
+    .orFail()
     .then((card) => {
-      return Card.findByIdAndRemove({ _id })
+      Card.deleteOne({ _id: card._id, owner: req.user._id })
       .then(() => res.status(200).send({
         message: 'Карточка удалена'
       }))
@@ -23,7 +22,7 @@ module.exports.getAllCards = (req, res) => {
     .catch(() => res.status(500).send({
       message: 'Ошибка'
     }))  
-};*/
+};
 
 module.exports.createCard = (req, res) => {
   const { name, link } = req.body;
