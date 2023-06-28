@@ -20,9 +20,18 @@ mongoose.connect(DATABASE, {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+//мидлвэр
+app.use((req, res, next) => {
+  req.user = {
+    _id: '649bf521e3f5e98ddc5a6fb5' // вставьте сюда _id созданного в предыдущем пункте пользователя
+  };
+                                  //649bf521e3f5e98ddc5a6fb5
+  next();
+});
+
 //роуты
 app.use('/users', routerUsers);
-/*app.use(routerCards);*/
+app.use('/cards', routerCards);
 
 app.listen(PORT, () => {
     console.log('Ссылка на сервер');
