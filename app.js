@@ -1,14 +1,14 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const bodyParser = require("body-parser");
-const { errorHandler } = require("./utils/errorHandler");
+const express = require('express');
+const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
+const { errorHandler } = require('./utils/errorHandler');
 
 const PORT = process.env.PORT || 3000;
-const BASE_PATH = process.env.BASE_PATH || "https://localhost.ru";
-const DATABASE = process.env.DATABASE || "mongodb://127.0.0.1:27017/mestodb";
+const BASE_PATH = process.env.BASE_PATH || 'https://localhost.ru';
+const DATABASE = process.env.DATABASE || 'mongodb://127.0.0.1:27017/mestodb';
 
-const routerUsers = require("./routes/users");
-const routerCards = require("./routes/cards");
+const routerUsers = require('./routes/users');
+const routerCards = require('./routes/cards');
 
 // создаем приложение
 const app = express();
@@ -24,7 +24,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // мидлвэр
 app.use((req, res, next) => {
   req.user = {
-    _id: "649d253972b42d7d539dbd5b", // вставьте сюда _id созданного в предыдущем пункте пользователя
+    _id: '649d253972b42d7d539dbd5b', // вставьте сюда _id созданного в предыдущем пункте пользователя
   };
   
   next();
@@ -32,13 +32,13 @@ app.use((req, res, next) => {
 
 // роуты
 function notfoundHandler(req, res) {
-  errorHandler({ name: "NotFoundError" }, res);
+  errorHandler({ name: 'NotFoundError' }, res);
 }
-app.use("/users", routerUsers);
-app.use("/cards", routerCards);
-app.use("*", notfoundHandler);
+app.use('/users', routerUsers);
+app.use('/cards', routerCards);
+app.use('*', notfoundHandler);
 
 app.listen(PORT, () => {
-  console.log("Ссылка на сервер");
+  console.log('Ссылка на сервер');
   console.log(`${BASE_PATH}:${PORT}`);
 });

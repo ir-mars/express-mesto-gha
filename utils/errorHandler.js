@@ -5,22 +5,22 @@ const ERROR_BAD_REQUEST = 400;
 class NotFoundError extends Error {
   constructor(message) {
     super(message);
-    this.name = "NotFoundError";
+    this.name = 'NotFoundError';
   }
 }
 
 function errorHandler (error, response) {
   const { name } = error;
 
-  if (name === "CastError" || name === "ValidationError") {
+  if (name === 'CastError' || name === 'ValidationError') {
     return response
       .status(ERROR_BAD_REQUEST)
-      .send({ message: "Переданы некорректные данные" });
+      .send({ message: 'Переданы некорректные данные' });
   }
-  if (name === "NotFoundError") {
+  if (name === 'NotFoundError') {
     return response
       .status(ERROR_NOT_FOUND)
-      .send({ message: "Данные не найдены" });
+      .send({ message: 'Данные не найдены' });
   }
   return response
     .status(ERROR_INTERNAL_SERVER)

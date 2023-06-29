@@ -1,11 +1,11 @@
-const Card = require("../models/card");
-const { errorHandler, notFoundErrorThrow } = require("../utils/errorHandler");
+const Card = require('../models/card');
+const { errorHandler, notFoundErrorThrow } = require('../utils/errorHandler');
 
 const SUCCES_ADDED_STATUS = 201;
 
 module.exports.getAllCards = (req, res) => {
   Card.find({})
-    .populate(["owner", "likes"])
+    .populate(['owner', 'likes'])
     .then((cards) => res.send({ data: cards }))
     .catch((error) => errorHandler(error, res));
 };
