@@ -12,18 +12,25 @@ class NotFoundError extends Error {
 function errorHandler (error, response) {
   const { name } = error;
 
-  if (name === 'CastError' || name === 'ValidationError' || name === 'OtherError') {
-    return response.status(ERROR_BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
-  } else if (name === 'NotFoundError') {
-    return response.status(ERROR_NOT_FOUND).send({ message: 'Данные не найдены' });
-  } else {
-    return response.status(ERROR_INTERNAL_SERVER).send({ message: 'Произошла ошибка сервера ' + ERROR_INTERNAL_SERVER });
+  if (name === "CastError" || name === "ValidationError") {
+    return response
+      .status(ERROR_BAD_REQUEST)
+      .send({ message: "Переданы некорректные данные" });
   }
+  if (name === "NotFoundError") {
+    return response
+      .status(ERROR_NOT_FOUND)
+      .send({ message: "Данные не найдены" });
+  }
+  return response
+    .status(ERROR_INTERNAL_SERVER)
+    .send({ message: `Произошла ошибка сервера ${ERROR_INTERNAL_SERVER}` });
 }
 
 function notFoundErrorThrow () {
   throw new NotFoundError();
 }
+
 module.exports = {
   ERROR_INTERNAL_SERVER,
   ERROR_NOT_FOUND,
