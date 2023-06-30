@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { JWT_CODE } = require('../utils/constants');
-const { ERROR_UNAUTHORIZED } = require('../utils/errorHandler');
+const { ERROR_UNAUTHORIZED } = require('../utils/constants');
 
 const messageErrorUnauth = 'Необходима авторизация';
 module.exports = (req, res, next) => {
