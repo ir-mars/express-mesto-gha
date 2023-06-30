@@ -1,40 +1,44 @@
-const ERROR_INTERNAL_SERVER = 500;
-const ERROR_NOT_FOUND = 404;
-const ERROR_BAD_REQUEST = 400;
+const mongoose = require('mongoose');
+const { ForbiddenError } = require('../errors/ForbiddenError');
+const { NotFoundError } = require('../errors/NotFoundError');
+const { UnauthorizedError } = require('../errors/UnauthorizedError');
 
-class NotFoundError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = 'NotFoundError';
-  }
-}
+const {
+  ERROR_CONFLICT,
+  ERROR_BAD_REQUEST,
+  ERROR_INTERNAL_SERVER,
+} = require('./constants');
+
+const { CastError, ValidationError } = mongoose.Error;
 
 function errorHandler (error, response) {
-  const { name } = error;
-
-  if (name === 'CastError' || name === 'ValidationError') {
+  if (error.code === 11000) {
+    return response
+      .status(ERROR_CONFLICT)
+      .send({ message: 'Пользователь с указанным email уже зарегистрирован' });
+  }
+  if (error instanceof CastError || error instanceof ValidationError) {
     return response
       .status(ERROR_BAD_REQUEST)
       .send({ message: 'Переданы некорректные данные' });
   }
-  if (name === 'NotFoundError') {
-    return response
-      .status(ERROR_NOT_FOUND)
-      .send({ message: 'Данные не найдены' });
+  if (
+    error instanceof NotFoundError ||
+    error instanceof UnauthorizedError ||
+    error instanceof ForbiddenError
+  ) {
+    const { message, statusCode } = error;
+    return response.status(statusCode).send({ message });
   }
   return response
     .status(ERROR_INTERNAL_SERVER)
-    .send({ message: `Произошла ошибка сервера ${ERROR_INTERNAL_SERVER}` });
+    .send({ message: 'Произошла ошибка сервера' });
 }
 
 function notFoundErrorThrow () {
   throw new NotFoundError();
 }
-
 module.exports = {
-  ERROR_INTERNAL_SERVER,
-  ERROR_NOT_FOUND,
-  ERROR_BAD_REQUEST,
   errorHandler,
   notFoundErrorThrow,
 };

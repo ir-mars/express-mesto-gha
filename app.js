@@ -14,6 +14,8 @@ const DATABASE = process.env.DATABASE || 'mongodb://127.0.0.1:27017/mestodb';
 const routerUsers = require('./routes/users');
 const routerCards = require('./routes/cards');
 const { login, createUser } = require('./controllers/users');
+const { validateRegister, validateLogin } = require('./validate/userValidate');
+const { NotFoundError } = require('./errors/NotFoundError');
 
 // создаем приложение
 const app = express();
@@ -33,8 +35,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 function notfoundHandler(req, res) {
   errorHandler({ name: 'NotFoundError' }, res);
 }
-app.post('/signin', login);
-app.post('/signup', createUser);
+app.post('/signin', validateLogin, login);
+app.post('/signup', validateRegister, createUser);
 app.use(auth);
 app.use('/users', routerUsers);
 app.use('/cards', routerCards);

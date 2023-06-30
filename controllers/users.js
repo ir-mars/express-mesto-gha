@@ -2,14 +2,10 @@ const User = require('../models/user');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-const { SUCCES_ADDED_STATUS } = require('../utils/constants');
+const { SUCCES_ADDED_STATUS, ERROR_UNAUTHORIZED } = require('../utils/constants');
 const { JWT_CODE } = require('../utils/constants');
 
-const {
-  errorHandler,
-  notFoundErrorThrow,
-  ERROR_BAD_REQUEST,
-} = require('../utils/errorHandler');
+const { errorHandler, notFoundErrorThrow } = require('../utils/errorHandler');
 
 module.exports.getAllUsers = (req, res) => {
   User.find({})
@@ -46,16 +42,29 @@ module.exports.login = (req, res) => {
           httpOnly: true,
           sameSite: true,
         })
-        .send ({ token }); ///////////////////////////////////
+        .send ({ token });
     })
     .catch((error) => {
-      res.status(ERROR_BAD_REQUEST).send({ message: error.message });
+      res.status(ERROR_UNAUTHORIZED).send({ message: error.message });
     });
 };
 
 module.exports.getUserData = (req, res) => {
   const { _id } = req.user;
   
+  User.findById({ _id })
+    .then((user) => {
+      if (user) {
+        res.send({ data: user });
+      } else {
+        notFoundErrorThrow();
+      }
+    })
+    .catch((error) => errorHandler(error, res));
+};
+
+module.exports.getUserId = (req, res) => {
+  const _id = req.params.id;
   User.findById({ _id })
     .then((user) => {
       if (user) {
