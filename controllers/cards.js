@@ -18,13 +18,14 @@ module.exports.deleteCard = (req, res) => {
       if (!deletedCard) {
         errorHandler(new NotFoundError('Карточка не найдена'), res);
       }
-      if (deletedCard.owner._id !== req.user._id) {
+      if (deletedCard.owner._id.toString() !== req.user._id.toString()) {
         errorHandler(
           new ForbiddenError(
             'Нельзя удалять карточки, созданные другими пользователями'
           ),
           res
         );
+        return;
       }
       Card.findByIdAndDelete(req.params.id)
         .then((card) => {
