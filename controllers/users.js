@@ -19,12 +19,17 @@ module.exports.getAllUsers = (req, res) => {
 
 module.exports.createUser = (req, res) => {
   const { name, about, avatar, email, password } = req.body;
+  
   bcrypt.hash(password, 10)
     .then ((hash) => User.create({
-      name, about, avatar, email, password: hash,
+      name,
+      about,
+      avatar,
+      email,
+      password: hash,
      })       
-    .then((user) => res.status(SUCCES_ADDED_STATUS).send(user))
-    .catch((error) => errorHandler(error, res)));
+      .then((user) => res.status(SUCCES_ADDED_STATUS).send(user))
+      .catch((error) => errorHandler(error, res)));
 };
 
 module.exports.login = (req, res) => {
@@ -102,5 +107,5 @@ module.exports.updateUserAvatar = (req, res) => {
 };
 
 module.exports.logout = (req, res) => {
-  res.clearCookie("token").send({ message: "Вы вышли" });
+  res.clearCookie('token').send({ message: 'Вы вышли' });
 };
