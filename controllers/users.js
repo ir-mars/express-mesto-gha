@@ -2,7 +2,7 @@ const User = require('../models/user');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-const SUCCES_ADDED_STATUS = 201;
+const { SUCCES_ADDED_STATUS } = require('../utils/constants');
 const { JWT_CODE } = require('../utils/constants');
 
 const {
@@ -38,23 +38,22 @@ module.exports.login = (req, res) => {
         { expiresIn: '7d' }
       );
       res
-        .cookie('jwt', token, {
+        .cookie('token', token, {
           maxAge: 3600000 * 24 * 7,
           httpOnly: true,
           sameSite: true,
         })
-        .send ({ token }); //////////////////////////////////////////////////////////////
+        .send ({ token }); ///////////////////////////////////
     })
     .catch((error) => {
       res
-        .status(ERROR_BAD_REQUEST)
-        .send({ message: error.message });
+        .status(ERROR_BAD_REQUEST).send({ message: error.message });
     });
 };
 
-module.exports.getUserById = (req, res) => {
-  const _id = req.params.userId;
-
+module.exports.getUserData = (req, res) => {
+  const { _id } = req.user;
+  
   User.findById({ _id })
     .then((user) => {
       if (user) {
@@ -67,27 +66,13 @@ module.exports.getUserById = (req, res) => {
 };
 
 module.exports.updateUserInfo = (req, res) => {
-  const { name, about, avatar } = req.body;
+  const { name, about } = req.body;
   
   User.findByIdAndUpdate(
     req.user._id,
-    { name, about, avatar },
+    { name, about },
     { new: true, runValidators: true }
   )
-    .then((user) => res.send(user))
-    .catch((error) => errorHandler(error, res));
-};
-
-module.exports.updateUserAvatar = (req, res) => {
-  const { avatar } = req.body;
-  if (!avatar) {
-    res
-      .status(ERROR_BAD_REQUEST)
-      .send({ message: 'Неправильно переданы данные' });
-    return;
-  }
-  User.findByIdAndUpdate(req.user._id, { avatar }, { new: true })
-    .then((user) => res.send(user))
     .then((user) => {
       if (user) {
         res.send(user);
@@ -96,4 +81,26 @@ module.exports.updateUserAvatar = (req, res) => {
       }
     })
     .catch((error) => errorHandler(error, res));
+};
+
+module.exports.updateUserAvatar = (req, res) => {
+  const { avatar } = req.body;
+  
+  User.findByIdAndUpdate(
+    req.user._id,
+    { avatar },
+    { new: true, runValidators: true }
+  )
+    .then((user) => {
+      if (user) {
+        res.send(user);
+      } else {
+        notFoundErrorThrow();
+      }
+    })
+    .catch((error) => errorHandler(error, res));
+};
+
+module.exports.logout = (req, res) => {
+  res.clearCookie("token").send({ message: "Вы вышли" });
 };

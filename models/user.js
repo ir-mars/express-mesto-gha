@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
 
-const { URL_REGEXP } = require('../utils/constants');
+const { REGEXP_URL } = require('../utils/constants');
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     validate: {
       validator: function (url) {
-        return URL_REGEXP.test(url);
+        return REGEXP_URL.test(url);
       },
       message: function ({ value }) {
         return value + 'неверный URL';
