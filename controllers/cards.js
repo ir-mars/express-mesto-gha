@@ -1,6 +1,8 @@
 const Card = require('../models/card');
 const { errorHandler, notFoundErrorThrow } = require('../utils/errorHandler');
 const { SUCCES_ADDED_STATUS } = require('../utils/constants');
+onst { ForbiddenError } = require('../errors/ForbiddenError');
+const { NotFoundError } = require('../errors/NotFoundError');
 
 module.exports.getAllCards = (req, res) => {
   Card.find({})
@@ -10,15 +12,30 @@ module.exports.getAllCards = (req, res) => {
 };
 
 module.exports.deleteCard = (req, res) => {
-  Card.findByIdAndDelete(req.params.id)
-    .then((card) => {
-      if (card) {
-        res.send(card);
-      } else {
-        notFoundErrorThrow();
+  Card.findById(req.params.id)
+    .populate([{ model: 'user', path: 'owner' }])
+    .then((deletedCard) => {
+      if (!deletedCard) {
+        errorHandler(new NotFoundError('Карточка не найдена'), res);
       }
-    })
-    .catch((error) => errorHandler(error, res));
+      if (deletedCard.owner._id !== req.user._id) {
+        errorHandler(
+          new ForbiddenError(
+            'Нельзя удалять карточки, созданные другими пользователями'
+          ),
+          res
+        );
+      }
+      Card.findByIdAndDelete(req.params.id)
+        .then((card) => {
+          if (card) {
+            res.send(card);
+          } else {
+            errorHandler(new NotFoundError('Карточка не найдена'), res);
+          }
+        })
+        .catch((error) => errorHandler(error, res));
+    });
 };
 
 module.exports.createCard = (req, res) => {
