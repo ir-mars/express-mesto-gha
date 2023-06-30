@@ -33,9 +33,7 @@ module.exports.createUser = (req, res) => {
 };
 
 module.exports.login = (req, res) => {
-  const { email, password } = req.body;
-
-  User.findUserByCredentials(email, password)
+    User.findUserByCredentials(req.body.email, req.body.password)
     .then((user) => {
       const token = jwt.sign(
         { _id: user._id },
@@ -51,8 +49,7 @@ module.exports.login = (req, res) => {
         .send ({ token }); ///////////////////////////////////
     })
     .catch((error) => {
-      res
-        .status(ERROR_BAD_REQUEST).send({ message: error.message });
+      res.status(ERROR_BAD_REQUEST).send({ message: error.message });
     });
 };
 
