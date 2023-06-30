@@ -1,7 +1,7 @@
 const Card = require('../models/card');
 const { errorHandler, notFoundErrorThrow } = require('../utils/errorHandler');
 const { SUCCES_ADDED_STATUS } = require('../utils/constants');
-onst { ForbiddenError } = require('../errors/ForbiddenError');
+const { ForbiddenError } = require('../errors/ForbiddenError');
 const { NotFoundError } = require('../errors/NotFoundError');
 
 module.exports.getAllCards = (req, res) => {
