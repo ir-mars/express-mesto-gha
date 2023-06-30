@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const SUCCES_ADDED_STATUS = 201;
-const SECRET_KEY = 'secret-code';
+const { JWT_CODE } = require('../utils/constants');
 
 const {
   errorHandler,
@@ -22,9 +22,9 @@ module.exports.createUser = (req, res) => {
   bcrypt.hash(password, 10)
     .then ((hash) => User.create({
       name, about, avatar, email, password: hash,
-     }))       
+     })       
     .then((user) => res.status(SUCCES_ADDED_STATUS).send(user))
-    .catch((error) => errorHandler(error, res));
+    .catch((error) => errorHandler(error, res)));
 };
 
 module.exports.login = (req, res) => {
@@ -34,11 +34,23 @@ module.exports.login = (req, res) => {
     .then((user) => {
       const token = jwt.sign(
         { _id: user._id },
-        SECRET_KEY,
+        JWT_CODE,
         { expiresIn: '7d' }
-        );//////////////////////////////////////////////////////////////
+      );
+      res
+        .cookie('jwt', token, {
+          maxAge: 3600000 * 24 * 7,
+          httpOnly: true,
+          sameSite: true,
+        })
+        .send ({ token }); //////////////////////////////////////////////////////////////
     })
-}
+    .catch((error) => {
+      res
+        .status(ERROR_BAD_REQUEST)
+        .send({ message: error.message });
+    });
+};
 
 module.exports.getUserById = (req, res) => {
   const _id = req.params.userId;
