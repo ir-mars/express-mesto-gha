@@ -2,7 +2,7 @@ const router = require('express').Router();
 
 const {
   validateCardData,
-  validateCardById,
+  validateCardById
 } = require("../validate/cardValidate");
 
 const {

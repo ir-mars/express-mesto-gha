@@ -33,7 +33,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // роуты
 function notfoundHandler(req, res) {
-  errorHandler({ name: 'NotFoundError' }, res);
+  errorHandler(new NotFoundError(), res);
 }
 app.post('/signin', validateLogin, login);
 app.post('/signup', validateRegister, createUser);
