@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const { errors } = require("celebrate");
 const routerUsers = require("./users");
 const routerCards = require("./cards");
 const { login, createUser } = require("../controllers/users");
@@ -16,6 +17,7 @@ router.use(auth);
 router.use("/users", routerUsers);
 router.use("/cards", routerCards);
 router.use("*", notfoundHandler);
+router.use(errors()); // celebrate
 router.use((err, _, res, next) => {
   errorHandler(err, res);
 });

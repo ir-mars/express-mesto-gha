@@ -2,7 +2,6 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
-const { errors } = require("celebrate");
 const routes = require("./routes/index");
 
 const { PORT, BASE_PATH, DATABASE } = require("./configuration");
@@ -23,7 +22,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // роуты
 app.use(routes);
-app.use(errors()); // celebrate
 
 app.listen(PORT, () => {
   console.log("Ссылка на сервер");
