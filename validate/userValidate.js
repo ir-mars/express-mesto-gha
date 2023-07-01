@@ -1,5 +1,5 @@
-const { Joi, celebrate } = require('celebrate');
-const { REGEXP_URL } = require('../utils/constants');
+const { Joi, celebrate } = require("celebrate");
+const { REGEXP_URL } = require("../utils/constants");
 
 module.exports.validateLogin = celebrate({
   body: Joi.object().keys({
@@ -20,14 +20,14 @@ module.exports.validateRegister = celebrate({
 
 module.exports.validateUserInfo = celebrate({
   body: Joi.object().keys({
-    name: Joi.string().min(2).max(30),
-    about: Joi.string().min(2).max(30),
+    name: Joi.string().required().min(2).max(30),
+    about: Joi.string().required().min(2).max(30),
   }),
 });
 
 module.exports.validateUserAvatar = celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string().pattern(REGEXP_URL),
+    avatar: Joi.string().required().pattern(REGEXP_URL),
   }),
 });
 

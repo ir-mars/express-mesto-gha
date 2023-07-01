@@ -1,19 +1,38 @@
-const jwt = require('jsonwebtoken');
-const { JWT_CODE } = require('../utils/constants');
-const { ERROR_UNAUTHORIZED } = require('../utils/constants');
+const jwt = require("jsonwebtoken");
+const { CODE_JWT } = require("../utils/constants");
+const { UnauthorizedError } = require("../errors/UnauthorizedError");
+const { errorHandler } = require("./errorHandler");
 
-const messageErrorUnauth = 'Необходима авторизация';
+function generateErrorAuth (res) {
+  errorHandler(new UnauthorizedError("Необходима авторизация"), res);
+}
 module.exports = (req, res, next) => {
   const { token } = req.cookies;
   if (!token) {
-    return res.status(ERROR_UNAUTHORIZED).send({ message: messageErrorUnauth });
+    generateErrorAuth(res);
+    return;
   }
   let payload;
   try {
-    payload = jwt.verify(token, JWT_CODE);
+    payload = jwt.verify(token, CODE_JWT);
+    req.user = payload;
   } catch (err) {
-    return res.status(ERROR_UNAUTHORIZED).send({ message: messageErrorUnauth });
+    generateErrorAuth(res);
   }
-  req.user = payload;
-  return next();
+  next();
 };
+
+// module.exports = (req, res, next) => {
+//   const { token } = req.cookies;
+//   if (!token) {
+//     // return next(throw new UnauthorizedError("Необходима авторизация"));
+//   }
+
+//   try {
+//     req.user = jwt.verify(token, CODE_JWT);
+//     return next();
+//   } catch (err) {
+//     console.log('errss');
+//     return next(new UnauthorizedError("Необходима авторизация"));
+//   }
+// };

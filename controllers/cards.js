@@ -1,53 +1,50 @@
-const Card = require('../models/card');
-const { errorHandler, notFoundErrorThrow } = require('../utils/errorHandler');
-const { SUCCES_ADDED_STATUS } = require('../utils/constants');
-const { ForbiddenError } = require('../errors/ForbiddenError');
-const { NotFoundError } = require('../errors/NotFoundError');
+const { ForbiddenError } = require("../errors/ForbiddenError");
+const Card = require("../models/card");
+const { SUCCES_ADDED_STATUS } = require("../utils/constants");
+const { notFoundErrorThrow } = require("../middlewares/errorHandler");
 
-module.exports.getAllCards = (req, res) => {
+module.exports.getAllCards = (req, res, next) => {
   Card.find({})
-    .populate(['owner', 'likes'])
+    .populate(["owner", "likes"])
     .then((cards) => res.send({ data: cards }))
-    .catch((error) => errorHandler(error, res));
+    .catch(next);
 };
 
-module.exports.deleteCard = (req, res) => {
+module.exports.deleteCard = (req, res, next) => {
+  /* const _id = req.card._id; */
   Card.findById(req.params.id)
-    .populate([{ model: 'user', path: 'owner' }])
+    .populate([{ model: "user", path: "owner" }])
     .then((deletedCard) => {
       if (!deletedCard) {
-        errorHandler(new NotFoundError('Карточка не найдена'), res);
+        notFoundErrorThrow();
       }
       if (deletedCard.owner._id.toString() !== req.user._id.toString()) {
-        errorHandler(
-          new ForbiddenError(
-            'Нельзя удалять карточки, созданные другими пользователями'
-          ),
-          res
+        throw new ForbiddenError(
+          "Нельзя удалять карточки, созданные другими пользователями"
         );
-        return;
       }
-      Card.findByIdAndDelete(req.params.id)
+      return deletedCard
+        .deleteOne()
         .then((card) => {
           if (card) {
             res.send(card);
           } else {
-            errorHandler(new NotFoundError('Карточка не найдена'), res);
+            notFoundErrorThrow();
           }
         })
-        .catch((error) => errorHandler(error, res));
-    });
+        .catch(next);
+    })
+    .catch(next);
 };
-
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
   const ownerId = req.user._id;
   Card.create({ name, link, owner: ownerId })
     .then((card) => res.status(SUCCES_ADDED_STATUS).send({ data: card }))
-    .catch((error) => errorHandler(error, res));
+    .catch(next);
 };
 
-module.exports.likeCard = (req, res) => {
+module.exports.likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.id,
     { $addToSet: { likes: req.user._id } },
@@ -57,10 +54,9 @@ module.exports.likeCard = (req, res) => {
       const response = card ? { data: card } : notFoundErrorThrow();
       res.send(response);
     })
-    .catch((error) => errorHandler(error, res));
+    .catch(next);
 };
-
-module.exports.dislikeCard = (req, res) => {
+module.exports.dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.id,
     { $pull: { likes: req.user._id } }, // убрать _id из массива
@@ -70,5 +66,5 @@ module.exports.dislikeCard = (req, res) => {
       const response = card ? { data: card } : notFoundErrorThrow();
       res.send(response);
     })
-    .catch((error) => errorHandler(error, res));
+    .catch(next);
 };

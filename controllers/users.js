@@ -1,117 +1,96 @@
-const User = require('../models/user');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const User = require("../models/user");
+const { CODE_JWT, SUCCES_ADDED_STATUS } = require("../utils/constants");
 
-const { SUCCES_ADDED_STATUS, ERROR_UNAUTHORIZED } = require('../utils/constants');
-const { JWT_CODE } = require('../utils/constants');
+const { notFoundErrorThrow } = require("../middlewares/errorHandler");
 
-const { errorHandler, notFoundErrorThrow } = require('../utils/errorHandler');
-
-module.exports.getAllUsers = (req, res) => {
+module.exports.getAllUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send(users))
-    .catch((error) => errorHandler(error, res));
+    .catch(next);
 };
 
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const { name, about, avatar, email, password } = req.body;
-  
-  bcrypt.hash(password, 10)
-    .then ((hash) => User.create({
-      name,
-      about,
-      avatar,
-      email,
-      password: hash,
-     })       
-      .then((user) => res.status(SUCCES_ADDED_STATUS).send(user))
-      .catch((error) => errorHandler(error, res)));
+  bcrypt
+    .hash(password, 10)
+    .then((hashCode) =>
+      User.create({
+        name,
+        about,
+        avatar,
+        email,
+        password: hashCode,
+      }).then((user) => res.status(SUCCES_ADDED_STATUS).send(user))
+    )
+    .catch(next);
 };
 
-module.exports.login = (req, res) => {
-    User.findUserByCredentials(req.body.email, req.body.password)
+module.exports.login = (req, res, next) => {
+  User.findUserByCredentials(req.body.email, req.body.password)
     .then((user) => {
-      const token = jwt.sign(
-        { _id: user._id },
-        JWT_CODE,
-        { expiresIn: '7d' }
-      );
+      const token = jwt.sign({ _id: user._id }, CODE_JWT, { expiresIn: "7d" });
       res
-        .cookie('token', token, {
-          maxAge: 3600000 * 24 * 7,
+        .cookie("token", token, {
+          maxAge: 604800, // неделя в секундах)
           httpOnly: true,
           sameSite: true,
         })
-        .send ({ token });
+        .send({ token });
     })
-    .catch((error) => {
-      res.status(ERROR_UNAUTHORIZED).send({ message: error.message });
-    });
+    .catch(next);
 };
-
-module.exports.getUserData = (req, res) => {
+function getUserById (_id, res, next) {
+  User.findById({ _id })
+    .then((user) => {
+      if (user) {
+        res.send({ data: user });
+      } else {
+        notFoundErrorThrow();
+      }
+    })
+    .catch(next);
+}
+module.exports.getUserData = (req, res, next) => {
   const { _id } = req.user;
-  
-  User.findById({ _id })
-    .then((user) => {
-      if (user) {
-        res.send({ data: user });
-      } else {
-        notFoundErrorThrow();
-      }
-    })
-    .catch((error) => errorHandler(error, res));
+  getUserById(_id, res, next);
 };
 
-module.exports.getUserId = (req, res) => {
+module.exports.getUserId = (req, res, next) => {
   const _id = req.params.id;
-  User.findById({ _id })
+  getUserById(_id, res, next);
+};
+
+function updateUserData (req, res, next, dataToUpdate) {
+  const { _id } = req.user;
+
+  User.findByIdAndUpdate(_id, dataToUpdate, {
+    new: true,
+    runValidators: true,
+  })
     .then((user) => {
       if (user) {
-        res.send({ data: user });
+        res.send(user);
       } else {
         notFoundErrorThrow();
       }
     })
-    .catch((error) => errorHandler(error, res));
-};
+    .catch(next);
+}
 
-module.exports.updateUserInfo = (req, res) => {
+module.exports.updateUserInfo = (req, res, next) => {
   const { name, about } = req.body;
-  
-  User.findByIdAndUpdate(
-    req.user._id,
-    { name, about },
-    { new: true, runValidators: true }
-  )
-    .then((user) => {
-      if (user) {
-        res.send(user);
-      } else {
-        notFoundErrorThrow();
-      }
-    })
-    .catch((error) => errorHandler(error, res));
+  const dataToUpdate = { name, about };
+  console.log(dataToUpdate);
+  updateUserData(req, res, next, dataToUpdate);
 };
 
-module.exports.updateUserAvatar = (req, res) => {
+module.exports.updateUserAvatar = (req, res, next) => {
   const { avatar } = req.body;
-  
-  User.findByIdAndUpdate(
-    req.user._id,
-    { avatar },
-    { new: true, runValidators: true }
-  )
-    .then((user) => {
-      if (user) {
-        res.send(user);
-      } else {
-        notFoundErrorThrow();
-      }
-    })
-    .catch((error) => errorHandler(error, res));
+  const dataToUpdate = { avatar };
+  updateUserData(req, res, next, dataToUpdate);
 };
-
 module.exports.logout = (req, res) => {
-  res.clearCookie('token').send({ message: 'Вы вышли' });
+  res.clearCookie("token").send({ message: "Вы вышли" });
 };
