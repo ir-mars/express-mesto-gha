@@ -37,7 +37,7 @@ module.exports.login = (req, res, next) => {
           httpOnly: true,
           sameSite: true,
         })
-        .send({ token });
+        .send({ message: "Вы авторизованы!" });
     })
     .catch(next);
 };
@@ -82,7 +82,6 @@ function updateUserData (req, res, next, dataToUpdate) {
 module.exports.updateUserInfo = (req, res, next) => {
   const { name, about } = req.body;
   const dataToUpdate = { name, about };
-  console.log(dataToUpdate);
   updateUserData(req, res, next, dataToUpdate);
 };
 
